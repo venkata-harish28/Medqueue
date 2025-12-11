@@ -2,9 +2,12 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
-import Dashboard from './pages/Dashboard';
+// Import pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PatientDashboard from './pages/PatientDashboard';
+import DoctorDashboard from './pages/DoctorDashboard';
 import SearchDoctors from './pages/SearchDoctors';
 import DoctorProfile from './pages/DoctorProfile';
 import BookAppointment from './pages/BookAppointment';
@@ -27,7 +30,6 @@ const PrivateRoute = ({ children }) => {
       </div>
     );
 
-  // FIX: redirect to login if NOT logged in
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -49,47 +51,70 @@ const AdminRoute = ({ children }) => {
 };
 
 
+// ---------------------- DASHBOARD ROUTER ----------------------
+const DashboardRouter = () => {
+  const { user } = useAuth();
+
+  if (!user) return <Navigate to="/login" />;
+
+  switch (user.role) {
+    case 'doctor':
+      return <DoctorDashboard />;
+
+    case 'admin':
+      return <Navigate to="/admin" />;
+
+    default:
+      return <PatientDashboard />;
+  }
+};
+
+
 // ---------------------- APP COMPONENT ----------------------
 function App() {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Hide Navbar on Dashboard ONLY
-  const hideNavbar = location.pathname === "/dashboard";
+  // Pages where navbar should be hidden
+  const hideNavbar = ['/login', '/register', '/', '/dashboard'].includes(
+    location.pathname
+  );
 
   return (
-    <div className="min-h-screen bg-red-200">
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Hide navbar on dashboard */}
+      {/* NAVBAR (only for logged-in users & visible pages) */}
       {user && !hideNavbar && <Navbar />}
 
       <Routes>
 
-        {/* LANDING PAGE = DASHBOARD */}
+        {/* PUBLIC LANDING PAGE */}
         <Route
           path="/"
-          element={<Navigate to="/dashboard" />}
+          element={user ? <Navigate to="/dashboard" /> : <Landing />}
         />
 
+        {/* DASHBOARD ROUTE (Auto-router based on role) */}
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <DashboardRouter />
             </PrivateRoute>
           }
         />
 
+        {/* AUTH ROUTES */}
         <Route
           path="/login"
           element={user ? <Navigate to="/dashboard" /> : <Login />}
         />
-
         <Route
           path="/register"
           element={user ? <Navigate to="/dashboard" /> : <Register />}
         />
 
+        {/* PATIENT ROUTES */}
         <Route
           path="/doctors"
           element={
@@ -135,6 +160,7 @@ function App() {
           }
         />
 
+        {/* ADMIN ROUTE */}
         <Route
           path="/admin"
           element={
@@ -146,7 +172,7 @@ function App() {
 
       </Routes>
 
-      {/* Voice Assistant only when logged in */}
+      {/* VOICE ASSISTANT (logged-in only) */}
       {user && <VoiceAssistant />}
     </div>
   );

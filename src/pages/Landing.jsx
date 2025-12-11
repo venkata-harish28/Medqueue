@@ -2,8 +2,7 @@ import React from 'react';
 import { Activity, Calendar, Mic, Clock, Star, Shield, Users, Heart, Brain, Stethoscope } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function LandingPage() {
-
+export default function Landing() {
   const navigate = useNavigate();
 
   return (
@@ -22,8 +21,6 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center space-x-4">
-
-              {/* Login Button */}
               <button
                 onClick={() => navigate("/login")}
                 className="px-4 py-2 text-gray-700 hover:text-blue-600 transition"
@@ -31,19 +28,16 @@ export default function LandingPage() {
                 Login
               </button>
 
-              {/* Get Started Button */}
               <button
                 onClick={() => navigate("/register")}
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition"
               >
                 Get Started
               </button>
-
             </div>
           </div>
         </div>
       </nav>
-
 
       {/* Hero Section */}
       <div className="pt-24 pb-20 px-4">
@@ -73,7 +67,6 @@ export default function LandingPage() {
             </button>
           </div>
 
-
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
             {[
@@ -88,10 +81,8 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
-
 
       {/* Features */}
       <div className="py-20 bg-white">
@@ -121,7 +112,6 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
