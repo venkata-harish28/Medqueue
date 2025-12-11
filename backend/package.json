@@ -6,8 +6,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "seed": "node seed/seedData.js",
-    "kill-port": "powershell -Command \"Get-NetTCPConnection -LocalPort 5000 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\"",
-    "dev:clean": "npm run kill-port && npm run dev"
+    "kill-port": "node kill-port.js"
   },
   "dependencies": {
     "express": "^4.18.2",

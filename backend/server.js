@@ -12,46 +12,88 @@ import voiceRoutes from './routes/voice.js';
 import { setupQueueHandlers } from './socket/queueHandler.js';
 
 dotenv.config();
-connectDB();
 
-const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: { origin: process.env.CLIENT_URL || 'http://localhost:5173' }
-});
+// Connect to MongoDB first
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log('✅ MongoDB Connected Successfully');
 
-app.use(cors());
-app.use(express.json());
+    const app = express();
+    const httpServer = createServer(app);
+    const io = new Server(httpServer, {
+      cors: { 
+        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        methods: ['GET', 'POST'],
+        credentials: true
+      }
+    });
 
-// Make io accessible to routes
-app.set('io', io);
+    // Middleware
+    app.use(cors({
+      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      credentials: true
+    }));
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/doctors', doctorRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/queue', queueRoutes);
-app.use('/api/voice', voiceRoutes);
+    // Make io accessible to routes
+    app.set('io', io);
 
-// Socket.io
-setupQueueHandlers(io);
+    // Health check endpoint
+    app.get('/api/health', (req, res) => {
+      res.json({ status: 'ok', message: 'Server is running' });
+    });
 
-// Port with fallback
-const PORT = process.env.PORT || 5000;
+    // Routes
+    app.use('/api/auth', authRoutes);
+    app.use('/api/doctors', doctorRoutes);
+    app.use('/api/appointments', appointmentRoutes);
+    app.use('/api/queue', queueRoutes);
+    app.use('/api/voice', voiceRoutes);
 
-const startServer = (port) => {
-  httpServer.listen(port, () => {
-    console.log(`✅ Server running on port ${port}`);
-    console.log(`🔗 API: http://localhost:${port}`);
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`❌ Port ${port} is busy, trying ${port + 1}...`);
-      startServer(port + 1);
-    } else {
-      console.error('Server error:', err);
-      process.exit(1);
-    }
-  });
+    // Error handling middleware
+    app.use((err, req, res, next) => {
+      console.error('Error:', err);
+      res.status(err.status || 500).json({ 
+        error: err.message || 'Internal server error' 
+      });
+    });
+
+    // Socket.io setup
+    setupQueueHandlers(io);
+
+    // Port with fallback
+    const PORT = process.env.PORT || 5000;
+
+    const tryStartServer = (port) => {
+      httpServer.listen(port, () => {
+        console.log(`✅ Server running on port ${port}`);
+        console.log(`🔗 API: http://localhost:${port}`);
+        console.log(`🔗 Frontend: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+      }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.log(`❌ Port ${port} is busy, trying ${port + 1}...`);
+          tryStartServer(port + 1);
+        } else {
+          console.error('❌ Server error:', err);
+          process.exit(1);
+        }
+      });
+    };
+
+    tryStartServer(PORT);
+
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
 };
 
-startServer(PORT);
+// Handle unhandled rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+startServer();
