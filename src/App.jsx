@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
@@ -14,10 +15,12 @@ import BookAppointment from './pages/BookAppointment';
 import AppointmentHistory from './pages/AppointmentHistory';
 import LiveQueue from './pages/LiveQueue';
 import AdminDashboard from './pages/AdminDashboard';
+import Profile from './pages/Profile';
+import MedicalRecords from './pages/MedicalRecords';
+import Prescriptions from './pages/Prescriptions';
 
-import Navbar from './components/Common/Navbar/Navbar';
+import Sidebar from './components/Common/Sidebar/Sidebar';
 import VoiceAssistant from './components/VoiceAssistant';
-
 
 // ---------------------- PRIVATE ROUTE ----------------------
 const PrivateRoute = ({ children }) => {
@@ -32,7 +35,6 @@ const PrivateRoute = ({ children }) => {
 
   return user ? children : <Navigate to="/login" />;
 };
-
 
 // ---------------------- ADMIN ROUTE ----------------------
 const AdminRoute = ({ children }) => {
@@ -49,7 +51,6 @@ const AdminRoute = ({ children }) => {
     ? children
     : <Navigate to="/dashboard" />;
 };
-
 
 // ---------------------- DASHBOARD ROUTER ----------------------
 const DashboardRouter = () => {
@@ -69,111 +70,138 @@ const DashboardRouter = () => {
   }
 };
 
-
 // ---------------------- APP COMPONENT ----------------------
 function App() {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Pages where navbar should be hidden
-  const hideNavbar = ['/login', '/register', '/', '/dashboard'].includes(
-    location.pathname
-  );
+  // Pages where sidebar should be hidden
+  const hideLayout = ['/login', '/register', '/'].includes(location.pathname);
+  
+  // Show sidebar only for logged-in patients
+  const showSidebar = user && user.role === 'patient' && !hideLayout;
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* SIDEBAR (only for logged-in patients) */}
+      {showSidebar && <Sidebar />}
 
-      {/* NAVBAR (only for logged-in users & visible pages) */}
-      {user && !hideNavbar && <Navbar />}
+      {/* Main Content with appropriate padding */}
+      <div className={showSidebar ? 'ml-64' : ''}>
+        <Routes>
+          {/* PUBLIC LANDING PAGE */}
+          <Route
+            path="/"
+            element={user ? <Navigate to="/dashboard" /> : <Landing />}
+          />
 
-      <Routes>
+          {/* DASHBOARD ROUTE (Auto-router based on role) */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <DashboardRouter />
+              </PrivateRoute>
+            }
+          />
 
-        {/* PUBLIC LANDING PAGE */}
-        <Route
-          path="/"
-          element={user ? <Navigate to="/dashboard" /> : <Landing />}
-        />
+          {/* AUTH ROUTES */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/dashboard" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/dashboard" /> : <Register />}
+          />
 
-        {/* DASHBOARD ROUTE (Auto-router based on role) */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <DashboardRouter />
-            </PrivateRoute>
-          }
-        />
+          {/* PATIENT ROUTES */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
 
-        {/* AUTH ROUTES */}
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/dashboard" /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/dashboard" /> : <Register />}
-        />
+          <Route
+            path="/medical-records"
+            element={
+              <PrivateRoute>
+                <MedicalRecords />
+              </PrivateRoute>
+            }
+          />
 
-        {/* PATIENT ROUTES */}
-        <Route
-          path="/doctors"
-          element={
-            <PrivateRoute>
-              <SearchDoctors />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/prescriptions"
+            element={
+              <PrivateRoute>
+                <Prescriptions />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/doctors/:id"
-          element={
-            <PrivateRoute>
-              <DoctorProfile />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/doctors"
+            element={
+              <PrivateRoute>
+                <SearchDoctors />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/book/:doctorId"
-          element={
-            <PrivateRoute>
-              <BookAppointment />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/doctors/:id"
+            element={
+              <PrivateRoute>
+                <DoctorProfile />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/appointments"
-          element={
-            <PrivateRoute>
-              <AppointmentHistory />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/book/:doctorId"
+            element={
+              <PrivateRoute>
+                <BookAppointment />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/queue/:doctorId"
-          element={
-            <PrivateRoute>
-              <LiveQueue />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/appointments"
+            element={
+              <PrivateRoute>
+                <AppointmentHistory />
+              </PrivateRoute>
+            }
+          />
 
-        {/* ADMIN ROUTE */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
+          <Route
+            path="/queue/:doctorId"
+            element={
+              <PrivateRoute>
+                <LiveQueue />
+              </PrivateRoute>
+            }
+          />
 
-      </Routes>
+          {/* ADMIN ROUTE */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+        </Routes>
 
-      {/* VOICE ASSISTANT (logged-in only) */}
-      {user && <VoiceAssistant />}
+        {/* VOICE ASSISTANT (logged-in only) */}
+        {user && <VoiceAssistant />}
+      </div>
     </div>
   );
 }

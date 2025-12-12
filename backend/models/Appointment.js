@@ -1,13 +1,23 @@
-// models/Appointment.js
+// backend/models/Appointment.js
+import mongoose from 'mongoose';
+
 const AppointmentSchema = new mongoose.Schema({
-  patient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  hospital: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
-  slot: Date,           // scheduled start time
-  durationMins: Number, // estimated duration
-  status: { type: String, enum: ['scheduled','checked_in','in_consult','completed','cancelled'], default: 'scheduled' },
-  tokenNumber: Number,  // digital token in queue
-  createdAt: { type: Date, default: Date.now },
-  notes: String
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
+  hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
+  date: { type: Date, required: true },
+  time: { type: String, required: true },
+  status: { 
+    type: String, 
+    enum: ['booked', 'checked-in', 'in-progress', 'completed', 'cancelled'], 
+    default: 'booked' 
+  },
+  tokenNumber: { type: String, required: true },
+  queuePosition: { type: Number },
+  estimatedWaitTime: { type: Number }, // in minutes
+  symptoms: String,
+  notes: String,
+  createdAt: { type: Date, default: Date.now }
 });
-module.exports = mongoose.model('Appointment', AppointmentSchema);
+
+export default mongoose.model('Appointment', AppointmentSchema);
