@@ -1,6 +1,6 @@
 // src/components/QueueStatus.jsx
 import React, { useEffect, useState } from 'react';
-import { useSocket } from '../context/SocketContext';
+import { useSocket } from '../../../context/SocketContext';
 import { Clock, Users } from 'lucide-react';
 
 const QueueStatus = ({ doctorId, appointment }) => {

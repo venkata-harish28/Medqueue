@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { doctorAPI } from '../services/api';
-import DoctorCard from '../components/DoctorCard';
+import DoctorCard from '../components/Patient/DoctorCard/DoctorCard';
 
 const SearchDoctors = () => {
   const [doctors, setDoctors] = useState([]);

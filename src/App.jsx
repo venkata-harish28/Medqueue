@@ -15,7 +15,7 @@ import AppointmentHistory from './pages/AppointmentHistory';
 import LiveQueue from './pages/LiveQueue';
 import AdminDashboard from './pages/AdminDashboard';
 
-import Navbar from './components/Navbar';
+import Navbar from './components/Common/Navbar/Navbar';
 import VoiceAssistant from './components/VoiceAssistant';
 
 

@@ -2,7 +2,7 @@
 // ========================================
 import React, { useEffect, useState } from 'react';
 import { appointmentAPI } from '../services/api';
-import AppointmentCard from '../components/AppointmentCard';
+import AppointmentCard from '../components/Patient/AppointmentCard/AppointmentCard';
 
 const AppointmentHistory = () => {
   const [appointments, setAppointments] = useState([]);
